@@ -1,0 +1,34 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Test CW Rule
+Parameters:
+  Topic:
+    Description: 'ARN for an SNSTopic that uses AWS Chatbot'
+    Type: String
+Resources:
+  EventRule: 
+    Type: "AWS::Events::Rule"
+    Properties: 
+      Description: "CWE when AWS Chatbot is run by setting Parameter Store value"
+      EventPattern: 
+        source:
+        - aws.ssm
+        detail-type:
+        - Parameter Store Change
+      State: "ENABLED"
+      Targets: 
+        - Arn: !Ref Topic
+          Id: SSMChatbotTopic
+          InputTransformer:
+            InputPathsMap:
+              detail-type: $.detail-type
+              resources: $.resources
+              time: $.time
+              region: $.region
+              account: $.account
+            InputTemplate: |-
+              "AWS Event Account ID: <account>"
+              "AWS Event Region: <region>"
+              "AWS Event Time: <time>"
+              "AWS Event Name: <detail-type>"
+              "AWS Event Resource(s): <resources>"
